@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(cat:*)",
+      "Bash(docker-compose restart:*)",
+      "Bash(node -e:*)",
+      "Bash(npm run build:*)",
+      "Bash(npm update:*)",
+      "Bash(npm audit fix:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

@@ -1,0 +1,42 @@
+{
+  "name": "vendure-backend",
+  "version": "1.0.0",
+  "description": "Vendure e-commerce backend",
+  "main": "dist/index.js",
+  "scripts": {
+    "dev": "nodemon --watch src -e ts --exec ts-node src/index.ts",
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "migrate": "ts-node node_modules/@vendure/core/cli/index.js migrate",
+    "compile-admin": "ts-node compile-admin-ui.ts",
+    "populate": "ts-node src/populate.ts"
+  },
+  "keywords": [
+    "vendure",
+    "ecommerce",
+    "backend"
+  ],
+  "author": "",
+  "license": "MIT",
+  "type": "commonjs",
+  "dependencies": {
+    "@aws-sdk/client-s3": "^3.919.0",
+    "@vendure/admin-ui": "^3.5.0",
+    "@vendure/admin-ui-plugin": "^3.5.0",
+    "@vendure/asset-server-plugin": "^3.5.0",
+    "@vendure/core": "^3.5.0",
+    "@vendure/email-plugin": "^3.5.0",
+    "@vendure/job-queue-plugin": "^3.5.0",
+    "@vendure/ui-devkit": "^3.5.0",
+    "better-sqlite3": "^12.4.1",
+    "ioredis": "^5.8.2",
+    "minio": "^8.0.6",
+    "pg": "^8.16.3"
+  },
+  "devDependencies": {
+    "@types/node": "^24.9.2",
+    "nodemon": "^3.1.10",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.9.3"
+  }
+}

@@ -1,0 +1,40 @@
+{
+  "name": "vendure-nextjs-ecommerce-template",
+  "version": "1.0.0",
+  "description": "Production-ready e-commerce template with Vendure backend and Next.js storefront",
+  "private": true,
+  "scripts": {
+    "docker:up": "docker-compose up",
+    "docker:up:build": "docker-compose up --build",
+    "docker:down": "docker-compose down",
+    "docker:reset": "docker-compose down -v && docker-compose up --build",
+    "docker:logs": "docker-compose logs -f",
+    "docker:logs:backend": "docker-compose logs -f backend",
+    "docker:logs:storefront": "docker-compose logs -f storefront",
+    "backend:dev": "cd backend && npm run dev",
+    "backend:build": "cd backend && npm run build",
+    "storefront:dev": "cd storefront && npm run dev",
+    "storefront:build": "cd storefront && npm run build",
+    "dev": "echo 'Use docker:up for full stack, or backend:dev/storefront:dev for individual services'",
+    "install:all": "cd backend && npm install && cd ../storefront && npm install",
+    "check-env": "node scripts/check-env.js",
+    "generate-secrets": "node scripts/generate-secrets.js",
+    "setup": "bash scripts/setup-template.sh",
+    "setup:windows": "scripts\\setup-template.bat",
+    "clean": "docker-compose down -v && rm -rf backend/node_modules storefront/node_modules backend/dist storefront/.next",
+    "clean:windows": "docker-compose down -v && rmdir /s /q backend\\node_modules storefront\\node_modules backend\\dist storefront\\.next"
+  },
+  "keywords": [
+    "vendure",
+    "nextjs",
+    "ecommerce",
+    "template",
+    "typescript",
+    "graphql"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "axios": "^1.13.1"
+  }
+}
