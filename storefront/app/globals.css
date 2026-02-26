@@ -23,8 +23,13 @@ body {
   min-height: 100vh;
 }
 
+/* Apply Rubik to all headings */
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-rubik), system-ui, sans-serif;
+}
+
 /* Ensure all text is readable */
-h1, h2, h3, h4, h5, h6, p, span, a, li, label, button {
+p, span, a, li, label, button {
   color: inherit;
 }
 
@@ -32,7 +37,7 @@ h1, h2, h3, h4, h5, h6, p, span, a, li, label, button {
 button:focus-visible,
 a:focus-visible,
 input:focus-visible {
-  outline: 2px solid #0284c7;
+  outline: 2px solid #ff6600;
   outline-offset: 2px;
 }
 
