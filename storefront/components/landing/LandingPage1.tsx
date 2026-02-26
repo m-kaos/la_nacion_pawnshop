@@ -144,7 +144,7 @@ export default function LandingPage1() {
 
                   <div className="space-y-5">
                     {[
-                      { num: '+9', label: 'Años de experiencia en García' },
+                      { num: '+9', label: 'Años de experiencia' },
                       { num: '30', label: 'Días de garantía en cada artículo' },
                       { num: '10%', label: 'Descuento pagando de contado' },
                       { num: '2', label: 'Sucursales para atenderte' },
