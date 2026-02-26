@@ -15,8 +15,11 @@ COPY . .
 # Create directories for static files
 RUN mkdir -p static/assets static/email/test-emails static/email/templates/partials static/email/templates/body
 
+# Build TypeScript
+RUN npm run build
+
 # Expose port
 EXPOSE 3001
 
-# Development command
-CMD ["npm", "run", "dev"]
+# Production command
+CMD ["npm", "start"]
