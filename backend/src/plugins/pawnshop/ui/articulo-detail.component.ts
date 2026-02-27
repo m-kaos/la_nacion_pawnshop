@@ -24,6 +24,7 @@ const GET_ARTICULO = gql`
         valorAvaluo
         estadoArticulo
         familia
+        fechaEntrada
       }
     }
   }
@@ -134,6 +135,10 @@ const DELETE_PRODUCT = gql`
             <input type="text" id="numeroDeSerie" formControlName="numeroDeSerie" class="clr-input" placeholder="Opcional" />
           </vdr-form-field>
 
+          <vdr-form-field label="Fecha de Entrada" for="fechaEntrada">
+            <input type="date" id="fechaEntrada" formControlName="fechaEntrada" class="clr-input" />
+          </vdr-form-field>
+
           <div class="section-title">Valores</div>
 
           <vdr-form-field label="Valor de Avalúo (MXN)" for="valorAvaluo">
@@ -204,6 +209,7 @@ export class ArticuloDetailComponent implements OnInit {
       valorAvaluo: [0],
       precio: [0],
       sku: [''],
+      fechaEntrada: [''],
     });
 
     const idParam = this.route.snapshot.paramMap.get('id');
@@ -227,6 +233,9 @@ export class ArticuloDetailComponent implements OnInit {
             valorAvaluo: p.customFields?.valorAvaluo ?? 0,
             precio: (v?.price ?? 0) / 100,
             sku: v?.sku ?? '',
+            fechaEntrada: p.customFields?.fechaEntrada
+              ? new Date(p.customFields.fechaEntrada).toISOString().split('T')[0]
+              : '',
           });
         }
       });
@@ -238,7 +247,7 @@ export class ArticuloDetailComponent implements OnInit {
     this.saving = true;
     const raw = this.form.value;
 
-    const customFields = {
+    const customFields: any = {
       familia: raw.familia,
       marca: raw.marca,
       modelo: raw.modelo,
@@ -246,6 +255,9 @@ export class ArticuloDetailComponent implements OnInit {
       estadoArticulo: raw.estadoArticulo,
       valorAvaluo: Math.round(+raw.valorAvaluo || 0),
     };
+    if (raw.fechaEntrada) {
+      customFields.fechaEntrada = new Date(raw.fechaEntrada).toISOString();
+    }
 
     const precio = Math.round((+raw.precio || 0) * 100);
     const sku = raw.sku || `ART-${Date.now()}`;

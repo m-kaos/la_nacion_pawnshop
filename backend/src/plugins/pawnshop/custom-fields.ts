@@ -31,4 +31,5 @@ export const productCustomFields: CustomFieldConfig[] = [
     label: [{ languageCode: 'es' as any, value: 'Estado del Artículo' }],
   },
   { name: 'familia', type: 'string', label: [{ languageCode: 'es' as any, value: 'Familia / Categoría' }] },
+  { name: 'fechaEntrada', type: 'datetime', nullable: true, label: [{ languageCode: 'es' as any, value: 'Fecha de Entrada' }] },
 ];

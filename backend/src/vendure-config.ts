@@ -49,7 +49,7 @@ export const config: VendureConfig = {
    * - CORS: Allow cross-origin requests from storefront
    */
   apiOptions: {
-    port: 3001, // Backend server port
+    port: parseInt(process.env.PORT || '3001', 10), // Railway injects PORT dynamically
     adminApiPath: 'admin-api', // Admin GraphQL endpoint
     shopApiPath: 'shop-api', // Storefront GraphQL endpoint
     adminApiPlayground: IS_DEV, // GraphQL playground for admin API
