@@ -1,12 +1,18 @@
 # Backend Dockerfile (Production)
-# Used by Railway / any production deployment.
-# Compiles TypeScript at build time and runs compiled output.
+# Used by Railway and any production deployment.
+# Compiles TypeScript at build time, patches ui-devkit for Angular 19,
+# then runs init-db before starting the server.
 FROM node:20-alpine
 
 WORKDIR /app
 
 COPY package*.json ./
-RUN npm ci
+RUN npm ci --legacy-peer-deps
+
+# Patch Vendure ui-devkit to work with Angular 19 output structure
+# Angular 19 outputs to dist/browser/ but ui-devkit expects dist/
+RUN sed -i "s|path.join(outputPath, 'dist')|path.join(outputPath, 'dist', 'browser')|g" \
+    node_modules/@vendure/ui-devkit/compiler/compile.js
 
 COPY . .
 
@@ -16,4 +22,4 @@ RUN npm run build
 
 EXPOSE 3001
 
-CMD ["npm", "start"]
+CMD ["sh", "-c", "node dist/init-db.js; npm start"]

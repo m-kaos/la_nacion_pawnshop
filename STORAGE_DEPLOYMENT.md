@@ -283,14 +283,16 @@ The backend's `Dockerfile` already runs `init-db.ts` on startup (sets up the Mex
 In Vercel → **"Environment Variables"**:
 
 ```env
-# Backend API — use the Railway URL from the step above
+# SSR (server-side): used when Next.js renders on the server (Vercel functions)
+VENDURE_SHOP_API_URL=https://vendure-backend-production-xxxx.up.railway.app/shop-api
+
+# Browser (client-side): used in the browser after hydration
 NEXT_PUBLIC_VENDURE_SHOP_API_URL=https://vendure-backend-production-xxxx.up.railway.app/shop-api
 ```
 
-> **Note about SSR vs browser:** The storefront's `graphql-client.ts` automatically uses
-> `http://backend:3001/shop-api` for SSR (server-side rendering) when running inside Docker
-> locally. On Vercel, both SSR and browser use `NEXT_PUBLIC_VENDURE_SHOP_API_URL` since
-> there's no Docker networking.
+> Both vars should point to the same Railway URL. `VENDURE_SHOP_API_URL` (no `NEXT_PUBLIC_` prefix)
+> is used server-side so it never leaks to the browser bundle. On local Docker, SSR falls back to
+> `http://backend:3001/shop-api` automatically when this var is not set.
 
 ### Step 4 — Deploy
 
@@ -339,6 +341,7 @@ Commit and push — Vercel redeploys automatically.
 | `S3_REGION` | `us-east-1` | `auto` | — |
 | `ASSET_URL_PREFIX` | `http://localhost:3001/assets` | `https://assets.tunegocio.com` | — |
 | `SHOP_URL` | `http://localhost:3000` | `https://tu-tienda.vercel.app` | — |
+| `VENDURE_SHOP_API_URL` | *(not set — falls back to Docker)* | — | `https://backend.railway.app/shop-api` |
 | `NEXT_PUBLIC_VENDURE_SHOP_API_URL` | `http://localhost:3001/shop-api` | — | `https://backend.railway.app/shop-api` |
 | `NODE_ENV` | `development` | `production` | `production` |
 

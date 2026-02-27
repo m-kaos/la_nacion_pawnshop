@@ -1,10 +1,10 @@
 import { Client, cacheExchange, fetchExchange } from 'urql';
 
-// Use 'backend' service name when running server-side in Docker
-// Use 'localhost' when running client-side in browser
+// SSR: use VENDURE_SHOP_API_URL if set (Vercel/Railway), otherwise Docker service name
+// Browser: always use the public NEXT_PUBLIC_ var
 const isServer = typeof window === 'undefined';
 const VENDURE_SHOP_API_URL = isServer
-  ? 'http://backend:3001/shop-api'
+  ? (process.env.VENDURE_SHOP_API_URL || 'http://backend:3001/shop-api')
   : (process.env.NEXT_PUBLIC_VENDURE_SHOP_API_URL || 'http://localhost:3001/shop-api');
 
 export const graphqlClient = new Client({
