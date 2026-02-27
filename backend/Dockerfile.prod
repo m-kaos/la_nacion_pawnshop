@@ -1,0 +1,19 @@
+# Backend Dockerfile (Production)
+# Used by Railway / any production deployment.
+# Compiles TypeScript at build time and runs compiled output.
+FROM node:20-alpine
+
+WORKDIR /app
+
+COPY package*.json ./
+RUN npm ci
+
+COPY . .
+
+RUN mkdir -p static/assets static/email/test-emails static/email/templates/partials static/email/templates/body
+
+RUN npm run build
+
+EXPOSE 3001
+
+CMD ["npm", "start"]

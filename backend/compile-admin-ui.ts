@@ -5,8 +5,20 @@ async function compile() {
   try {
     await compileUiExtensions({
       outputPath: path.join(__dirname, 'admin-ui'),
-      extensions: [],
-      devMode: true,
+      extensions: [
+        {
+          extensionPath: path.join(__dirname, 'src/plugins/pawnshop/ui'),
+          ngModules: [
+            {
+              type: 'lazy',
+              route: 'contratos',
+              ngModuleFileName: 'contratos.module.ts',
+              ngModuleName: 'ContratosModule',
+            },
+          ],
+        },
+      ],
+      devMode: false,
     });
     console.log('✅ Admin UI compiled successfully!');
     process.exit(0);

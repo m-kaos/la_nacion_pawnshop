@@ -8,6 +8,12 @@ const nextConfig = {
         port: '3001',
         pathname: '/assets/**',
       },
+      {
+        protocol: 'http',
+        hostname: 'backend',
+        port: '3001',
+        pathname: '/assets/**',
+      },
     ],
   },
   experimental: {

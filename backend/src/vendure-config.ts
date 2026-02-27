@@ -22,10 +22,12 @@ import {
   DefaultStockAllocationStrategy,
 } from '@vendure/core';
 import { defaultEmailHandlers, EmailPlugin } from '@vendure/email-plugin';
-import { AssetServerPlugin } from '@vendure/asset-server-plugin';
+import { AssetServerPlugin, configureS3AssetStorage } from '@vendure/asset-server-plugin';
 import { AdminUiPlugin } from '@vendure/admin-ui-plugin';
+import { compileUiExtensions } from '@vendure/ui-devkit/compiler';
 import path from 'path';
 import { ContentManagementPlugin } from './plugins/content-management';
+import { PawnshopPlugin } from './plugins/pawnshop';
 
 // Detect environment (development vs production)
 const IS_DEV = process.env.NODE_ENV !== 'production';
@@ -154,9 +156,23 @@ export const config: VendureConfig = {
      * See: https://docs.vendure.io/guides/core-concepts/assets/
      */
     AssetServerPlugin.init({
-      route: 'assets', // Access uploaded files at /assets
-      assetUploadDir: path.join(__dirname, '../static/assets'), // Local storage
-      // For production S3 configuration, see DEPLOYMENT.md
+      route: 'assets',
+      assetUploadDir: path.join(__dirname, '../static/assets'),
+      assetUrlPrefix: process.env.ASSET_URL_PREFIX,
+      storageStrategyFactory: process.env.S3_BUCKET
+        ? configureS3AssetStorage({
+            bucket: process.env.S3_BUCKET,
+            credentials: {
+              accessKeyId: process.env.S3_ACCESS_KEY_ID!,
+              secretAccessKey: process.env.S3_SECRET_ACCESS_KEY!,
+            },
+            nativeS3Configuration: {
+              region: process.env.S3_REGION || 'us-east-1',
+              endpoint: process.env.S3_ENDPOINT,
+              forcePathStyle: true, // required for MinIO; harmless for Cloudflare R2
+            },
+          })
+        : undefined,
     }),
 
     /**
@@ -209,8 +225,46 @@ export const config: VendureConfig = {
      * To customize branding (logo, colors), see CUSTOMIZATION_GUIDE.md
      */
     AdminUiPlugin.init({
-      route: 'admin', // Admin dashboard at /admin
-      port: 3002, // Admin UI build server port (internal)
+      route: 'admin',
+      port: 3002,
+      adminUiConfig: {
+        defaultLanguage: 'es' as any,
+        availableLanguages: ['es' as any],
+      },
+      app: compileUiExtensions({
+        outputPath: path.join(__dirname, '../admin-ui'),
+        extensions: [
+          {
+            extensionPath: path.join(__dirname, './plugins/pawnshop/ui'),
+            ngModules: [
+              {
+                type: 'shared',
+                ngModuleFileName: 'contratos-shared.module.ts',
+                ngModuleName: 'ContratosSharedModule',
+              },
+              {
+                type: 'lazy',
+                route: 'contratos',
+                ngModuleFileName: 'contratos.module.ts',
+                ngModuleName: 'ContratosModule',
+              },
+              {
+                type: 'lazy',
+                route: 'articulos',
+                ngModuleFileName: 'articulos.module.ts',
+                ngModuleName: 'ArticulosModule',
+              },
+              {
+                type: 'lazy',
+                route: 'combos',
+                ngModuleFileName: 'combos.module.ts',
+                ngModuleName: 'CombosModule',
+              },
+            ],
+          },
+        ],
+        devMode: false,
+      }),
     }),
 
     /**
@@ -222,5 +276,6 @@ export const config: VendureConfig = {
      * See ADMIN_CONTENT_MANAGEMENT.md for usage instructions.
      */
     ContentManagementPlugin,
+    PawnshopPlugin,
   ],
 };

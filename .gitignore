@@ -52,3 +52,5 @@ backend/static/email/test-emails/*
 # Misc
 .turbo
 *.tsbuildinfo
+
+.claude
