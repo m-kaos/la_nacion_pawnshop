@@ -17,6 +17,12 @@ COPY . .
 
 RUN mkdir -p static/assets static/email/test-emails static/email/templates/partials static/email/templates/body
 
+# Pre-compile the Admin UI with all custom extensions at image build time.
+# This bakes the compiled Angular bundle into the image so the container starts instantly
+# without any Angular compilation delay — eliminating the "ng: not found" startup error
+# and the 25-second compilation window that caused Railway 502s.
+RUN ./node_modules/.bin/ts-node compile-admin-ui.ts
+
 EXPOSE 3001
 
 CMD ["sh", "-c", "./node_modules/.bin/ts-node src/init-db.ts; npm run dev"]

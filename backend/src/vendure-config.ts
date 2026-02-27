@@ -26,11 +26,17 @@ import { AssetServerPlugin, configureS3AssetStorage } from '@vendure/asset-serve
 import { AdminUiPlugin } from '@vendure/admin-ui-plugin';
 import { compileUiExtensions } from '@vendure/ui-devkit/compiler';
 import path from 'path';
+import fs from 'fs';
 import { ContentManagementPlugin } from './plugins/content-management';
 import { PawnshopPlugin } from './plugins/pawnshop';
 
 // Detect environment (development vs production)
 const IS_DEV = process.env.NODE_ENV !== 'production';
+
+// Path to the pre-compiled Admin UI (built during `docker build` via compile-admin-ui.ts).
+// If this directory exists we skip runtime Angular compilation entirely → fast startup.
+const PRECOMPILED_ADMIN_UI = path.join(__dirname, '../admin-ui/dist/browser');
+const hasPrecompiledAdminUi = fs.existsSync(PRECOMPILED_ADMIN_UI);
 
 /**
  * Main Vendure Configuration
@@ -231,40 +237,44 @@ export const config: VendureConfig = {
         defaultLanguage: 'es' as any,
         availableLanguages: ['es' as any],
       },
-      app: compileUiExtensions({
-        outputPath: path.join(__dirname, '../admin-ui'),
-        extensions: [
-          {
-            extensionPath: path.join(__dirname, './plugins/pawnshop/ui'),
-            ngModules: [
+      // If admin-ui/dist/browser exists (pre-compiled during `docker build`), serve it directly.
+      // Otherwise fall back to runtime compilation (local dev without pre-build).
+      app: hasPrecompiledAdminUi
+        ? { path: PRECOMPILED_ADMIN_UI }
+        : compileUiExtensions({
+            outputPath: path.join(__dirname, '../admin-ui'),
+            extensions: [
               {
-                type: 'shared',
-                ngModuleFileName: 'contratos-shared.module.ts',
-                ngModuleName: 'ContratosSharedModule',
-              },
-              {
-                type: 'lazy',
-                route: 'contratos',
-                ngModuleFileName: 'contratos.module.ts',
-                ngModuleName: 'ContratosModule',
-              },
-              {
-                type: 'lazy',
-                route: 'articulos',
-                ngModuleFileName: 'articulos.module.ts',
-                ngModuleName: 'ArticulosModule',
-              },
-              {
-                type: 'lazy',
-                route: 'combos',
-                ngModuleFileName: 'combos.module.ts',
-                ngModuleName: 'CombosModule',
+                extensionPath: path.join(__dirname, './plugins/pawnshop/ui'),
+                ngModules: [
+                  {
+                    type: 'shared',
+                    ngModuleFileName: 'contratos-shared.module.ts',
+                    ngModuleName: 'ContratosSharedModule',
+                  },
+                  {
+                    type: 'lazy',
+                    route: 'contratos',
+                    ngModuleFileName: 'contratos.module.ts',
+                    ngModuleName: 'ContratosModule',
+                  },
+                  {
+                    type: 'lazy',
+                    route: 'articulos',
+                    ngModuleFileName: 'articulos.module.ts',
+                    ngModuleName: 'ArticulosModule',
+                  },
+                  {
+                    type: 'lazy',
+                    route: 'combos',
+                    ngModuleFileName: 'combos.module.ts',
+                    ngModuleName: 'CombosModule',
+                  },
+                ],
               },
             ],
-          },
-        ],
-        devMode: false,
-      }),
+            devMode: false,
+          }),
     }),
 
     /**
