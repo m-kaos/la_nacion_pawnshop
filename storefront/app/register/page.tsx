@@ -23,11 +23,10 @@ export default function RegisterPage() {
   // Load saved form data from login page
   useEffect(() => {
     const savedData = getFormData();
-    if (savedData.email || savedData.password) {
+    if (savedData.email) {
       setFormData(prev => ({
         ...prev,
         emailAddress: savedData.email || '',
-        password: savedData.password || '',
         firstName: savedData.firstName || '',
         lastName: savedData.lastName || '',
         phoneNumber: savedData.phoneNumber || '',
@@ -39,7 +38,6 @@ export default function RegisterPage() {
   useEffect(() => {
     saveFormData({
       email: formData.emailAddress,
-      password: formData.password,
       firstName: formData.firstName,
       lastName: formData.lastName,
       phoneNumber: formData.phoneNumber,
