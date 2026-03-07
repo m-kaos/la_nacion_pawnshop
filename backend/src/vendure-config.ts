@@ -20,12 +20,14 @@ import {
   DefaultSearchPlugin,
   VendureConfig,
   DefaultStockAllocationStrategy,
+  NativeAuthenticationStrategy,
 } from '@vendure/core';
 import { defaultEmailHandlers, EmailPlugin } from '@vendure/email-plugin';
 import { AssetServerPlugin } from '@vendure/asset-server-plugin';
 import { AdminUiPlugin } from '@vendure/admin-ui-plugin';
 import path from 'path';
 import { ContentManagementPlugin } from './plugins/content-management';
+import { GoogleAuthenticationStrategy } from './plugins/google-auth/google-authentication-strategy';
 
 // Detect environment (development vs production)
 const IS_DEV = process.env.NODE_ENV !== 'production';
@@ -70,6 +72,10 @@ export const config: VendureConfig = {
   authOptions: {
     tokenMethod: ['bearer', 'cookie'], // Support both token types
     requireVerification: false, // Skip email verification (set true in production)
+    shopAuthenticationStrategy: [
+      new NativeAuthenticationStrategy(),
+      new GoogleAuthenticationStrategy(process.env.GOOGLE_CLIENT_ID || 'dummy-client-id'),
+    ],
     superadminCredentials: {
       // Admin dashboard login credentials
       // ⚠️ Change these in production via environment variables!

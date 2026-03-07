@@ -2,7 +2,7 @@
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { graphqlClient } from '@/lib/graphql-client';
-import { GET_ACTIVE_CUSTOMER, LOGIN_MUTATION, LOGOUT_MUTATION } from '@/lib/auth-queries';
+import { GET_ACTIVE_CUSTOMER, LOGIN_MUTATION, LOGOUT_MUTATION, GOOGLE_LOGIN_MUTATION } from '@/lib/auth-queries';
 
 interface Customer {
   id: string;
@@ -17,6 +17,7 @@ interface AuthContextType {
   customer: Customer | null;
   loading: boolean;
   login: (email: string, password: string, rememberMe?: boolean) => Promise<{ success: boolean; error?: string }>;
+  loginWithGoogle: (token: string) => Promise<{ success: boolean; error?: string }>;
   logout: () => Promise<void>;
   refetchCustomer: () => Promise<void>;
 }
@@ -85,6 +86,37 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  const loginWithGoogle = async (token: string) => {
+    try {
+      console.log('Attempting Google login');
+      const result = await graphqlClient.mutation(GOOGLE_LOGIN_MUTATION, {
+        token,
+      });
+
+      console.log('Google Login result:', result);
+
+      if (result.data?.authenticate?.id) {
+        // Login successful
+        console.log('Google Login successful, fetching customer...');
+        await fetchCustomer();
+        return { success: true };
+      } else if (result.data?.authenticate?.errorCode) {
+        // Login failed with error
+        console.log('Google Login failed with error:', result.data.authenticate);
+        return {
+          success: false,
+          error: result.data.authenticate.message || 'Google Login failed',
+        };
+      }
+
+      console.log('Google Login failed - no id or error');
+      return { success: false, error: 'Google Login failed' };
+    } catch (error: any) {
+      console.error('Google Login error:', error);
+      return { success: false, error: error.message || 'An error occurred' };
+    }
+  };
+
   const logout = async () => {
     try {
       await graphqlClient.mutation(LOGOUT_MUTATION, {});
@@ -104,6 +136,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         customer,
         loading,
         login,
+        loginWithGoogle,
         logout,
         refetchCustomer,
       }}

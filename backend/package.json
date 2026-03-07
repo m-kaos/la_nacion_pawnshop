@@ -29,6 +29,7 @@
     "@vendure/job-queue-plugin": "^3.5.0",
     "@vendure/ui-devkit": "^3.5.0",
     "better-sqlite3": "^12.4.1",
+    "google-auth-library": "^10.6.1",
     "ioredis": "^5.8.2",
     "minio": "^8.0.6",
     "pg": "^8.16.3"

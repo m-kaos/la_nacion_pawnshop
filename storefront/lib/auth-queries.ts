@@ -15,8 +15,23 @@ export const REGISTER_CUSTOMER = gql`
 `;
 
 export const LOGIN_MUTATION = gql`
-  mutation Login($email: String!, $password: String!) {
-    login(username: $email, password: $password) {
+  mutation Login($email: String!, $password: String!, $rememberMe: Boolean) {
+    login(username: $email, password: $password, rememberMe: $rememberMe) {
+      ... on CurrentUser {
+        id
+        identifier
+      }
+      ... on ErrorResult {
+        errorCode
+        message
+      }
+    }
+  }
+`;
+
+export const GOOGLE_LOGIN_MUTATION = gql`
+  mutation GoogleLogin($token: String!) {
+    authenticate(input: { google: { token: $token } }) {
       ... on CurrentUser {
         id
         identifier
