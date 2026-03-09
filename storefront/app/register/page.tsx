@@ -4,6 +4,8 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { graphqlClient } from '@/lib/graphql-client';
+import { useAuth } from '@/contexts/AuthContext';
+import { GoogleOAuthProvider, GoogleLogin, CredentialResponse } from '@react-oauth/google';
 import { REGISTER_CUSTOMER } from '@/lib/auth-queries';
 import { saveFormData, getFormData, clearFormData } from '@/lib/form-storage';
 
@@ -18,16 +20,16 @@ export default function RegisterPage() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
+  const { loginWithGoogle } = useAuth();
   const router = useRouter();
 
   // Load saved form data from login page
   useEffect(() => {
     const savedData = getFormData();
-    if (savedData.email || savedData.password) {
+    if (savedData.email) {
       setFormData(prev => ({
         ...prev,
         emailAddress: savedData.email || '',
-        password: savedData.password || '',
         firstName: savedData.firstName || '',
         lastName: savedData.lastName || '',
         phoneNumber: savedData.phoneNumber || '',
@@ -39,7 +41,6 @@ export default function RegisterPage() {
   useEffect(() => {
     saveFormData({
       email: formData.emailAddress,
-      password: formData.password,
       firstName: formData.firstName,
       lastName: formData.lastName,
       phoneNumber: formData.phoneNumber,
@@ -82,6 +83,26 @@ export default function RegisterPage() {
     }
   };
 
+  const handleGoogleSuccess = async (credentialResponse: CredentialResponse) => {
+    if (!credentialResponse.credential) return;
+
+    setLoading(true);
+    setError('');
+
+    console.log('Register page: submitting Google token');
+    const result = await loginWithGoogle(credentialResponse.credential);
+    console.log('Register page: Google result received', result);
+
+    if (result.success) {
+      setTimeout(() => {
+        window.location.href = '/account';
+      }, 100);
+    } else {
+      setError(result.error || 'Google Registration/Login failed');
+      setLoading(false);
+    }
+  };
+
   if (success) {
     return (
       <div className="container mx-auto px-4 py-16">
@@ -97,118 +118,141 @@ export default function RegisterPage() {
   }
 
   return (
-    <div className="container mx-auto px-4 py-16">
-      <div className="max-w-md mx-auto">
-        <div className="bg-white rounded-lg shadow-md p-8">
-          <h1 className="text-3xl font-bold mb-6 text-center">Create Account</h1>
+    <GoogleOAuthProvider clientId={process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || 'dummy-google-client-id'}>
+      <div className="container mx-auto px-4 py-16">
+        <div className="max-w-md mx-auto">
+          <div className="bg-white rounded-lg shadow-md p-8">
+            <h1 className="text-3xl font-bold mb-6 text-center">Create Account</h1>
 
-          {error && (
-            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded mb-6">
-              {error}
-            </div>
-          )}
+            {error && (
+              <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded mb-6">
+                {error}
+              </div>
+            )}
 
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label htmlFor="firstName" className="block text-sm font-semibold mb-2">
+                    First Name
+                  </label>
+                  <input
+                    id="firstName"
+                    name="firstName"
+                    type="text"
+                    value={formData.firstName}
+                    onChange={handleChange}
+                    required
+                    className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-600"
+                  />
+                </div>
+
+                <div>
+                  <label htmlFor="lastName" className="block text-sm font-semibold mb-2">
+                    Last Name
+                  </label>
+                  <input
+                    id="lastName"
+                    name="lastName"
+                    type="text"
+                    value={formData.lastName}
+                    onChange={handleChange}
+                    required
+                    className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-600"
+                  />
+                </div>
+              </div>
+
               <div>
-                <label htmlFor="firstName" className="block text-sm font-semibold mb-2">
-                  First Name
+                <label htmlFor="emailAddress" className="block text-sm font-semibold mb-2">
+                  Email
                 </label>
                 <input
-                  id="firstName"
-                  name="firstName"
-                  type="text"
-                  value={formData.firstName}
+                  id="emailAddress"
+                  name="emailAddress"
+                  type="email"
+                  value={formData.emailAddress}
                   onChange={handleChange}
                   required
                   className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-600"
+                  placeholder="your@email.com"
                 />
               </div>
 
               <div>
-                <label htmlFor="lastName" className="block text-sm font-semibold mb-2">
-                  Last Name
+                <label htmlFor="phoneNumber" className="block text-sm font-semibold mb-2">
+                  Phone Number (optional)
                 </label>
                 <input
-                  id="lastName"
-                  name="lastName"
-                  type="text"
-                  value={formData.lastName}
+                  id="phoneNumber"
+                  name="phoneNumber"
+                  type="tel"
+                  value={formData.phoneNumber}
+                  onChange={handleChange}
+                  className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-600"
+                  placeholder="+1 (555) 000-0000"
+                />
+              </div>
+
+              <div>
+                <label htmlFor="password" className="block text-sm font-semibold mb-2">
+                  Password
+                </label>
+                <input
+                  id="password"
+                  name="password"
+                  type="password"
+                  value={formData.password}
                   onChange={handleChange}
                   required
+                  minLength={8}
                   className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-600"
+                  placeholder="••••••••"
+                />
+                <p className="text-xs text-gray-500 mt-1">Minimum 8 characters</p>
+              </div>
+
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full bg-primary-600 text-white py-3 rounded-lg hover:bg-primary-700 transition font-semibold disabled:bg-gray-400 disabled:cursor-not-allowed mt-6"
+              >
+                {loading ? 'Creating account...' : 'Create Account'}
+              </button>
+            </form>
+
+            <div className="mt-8">
+              <div className="relative">
+                <div className="absolute inset-0 flex items-center">
+                  <div className="w-full border-t border-gray-300"></div>
+                </div>
+                <div className="relative flex justify-center text-sm">
+                  <span className="px-2 bg-white text-gray-500">Or continue with</span>
+                </div>
+              </div>
+
+              <div className="mt-6 flex justify-center">
+                <GoogleLogin
+                  onSuccess={handleGoogleSuccess}
+                  onError={() => {
+                    console.error('Google Login Failed');
+                    setError('Google Authentication failed');
+                  }}
                 />
               </div>
             </div>
 
-            <div>
-              <label htmlFor="emailAddress" className="block text-sm font-semibold mb-2">
-                Email
-              </label>
-              <input
-                id="emailAddress"
-                name="emailAddress"
-                type="email"
-                value={formData.emailAddress}
-                onChange={handleChange}
-                required
-                className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-600"
-                placeholder="your@email.com"
-              />
+            <div className="mt-6 text-center">
+              <p className="text-gray-600 text-sm">
+                Already have an account?{' '}
+                <Link href="/login" className="text-primary-600 hover:text-primary-700 font-semibold">
+                  Login here
+                </Link>
+              </p>
             </div>
-
-            <div>
-              <label htmlFor="phoneNumber" className="block text-sm font-semibold mb-2">
-                Phone Number (optional)
-              </label>
-              <input
-                id="phoneNumber"
-                name="phoneNumber"
-                type="tel"
-                value={formData.phoneNumber}
-                onChange={handleChange}
-                className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-600"
-                placeholder="+1 (555) 000-0000"
-              />
-            </div>
-
-            <div>
-              <label htmlFor="password" className="block text-sm font-semibold mb-2">
-                Password
-              </label>
-              <input
-                id="password"
-                name="password"
-                type="password"
-                value={formData.password}
-                onChange={handleChange}
-                required
-                minLength={8}
-                className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-600"
-                placeholder="••••••••"
-              />
-              <p className="text-xs text-gray-500 mt-1">Minimum 8 characters</p>
-            </div>
-
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full bg-primary-600 text-white py-3 rounded-lg hover:bg-primary-700 transition font-semibold disabled:bg-gray-400 disabled:cursor-not-allowed mt-6"
-            >
-              {loading ? 'Creating account...' : 'Create Account'}
-            </button>
-          </form>
-
-          <div className="mt-6 text-center">
-            <p className="text-gray-600 text-sm">
-              Already have an account?{' '}
-              <Link href="/login" className="text-primary-600 hover:text-primary-700 font-semibold">
-                Login here
-              </Link>
-            </p>
           </div>
         </div>
       </div>
-    </div>
+    </GoogleOAuthProvider>
   );
 }
