@@ -94,19 +94,23 @@ export const config: VendureConfig = {
    * Database Connection Options
    *
    * Configures PostgreSQL database connection.
-   * ⚠️ IMPORTANT: Set synchronize=false in production!
-   * Use migrations instead of auto-sync in production.
+   * Supports DATABASE_URL (Railway, Heroku, etc.) or individual DB_* vars.
+   * DB_SYNCHRONIZE: set to 'false' once migrations are in place.
    */
   dbConnectionOptions: {
-    type: 'postgres', // Database type
-    synchronize: IS_DEV, // Auto-sync schema (ONLY in development!)
-    logging: false, // Disable SQL query logging (set true for debugging)
-    database: process.env.DB_NAME || 'vendure',
-    host: process.env.DB_HOST || 'localhost',
-    port: Number(process.env.DB_PORT) || 5432,
-    username: process.env.DB_USERNAME || 'postgres',
-    password: process.env.DB_PASSWORD || 'postgres',
-    migrations: [path.join(__dirname, './migrations/*.+(js|ts)')],
+    type: 'postgres',
+    synchronize: process.env.DB_SYNCHRONIZE !== 'false', // defaults true; disable when using migrations
+    logging: false,
+    ...(process.env.DATABASE_URL
+      ? { url: process.env.DATABASE_URL }
+      : {
+          database: process.env.DB_NAME || 'vendure',
+          host: process.env.DB_HOST || 'localhost',
+          port: Number(process.env.DB_PORT) || 5432,
+          username: process.env.DB_USERNAME || 'postgres',
+          password: process.env.DB_PASSWORD || 'postgres',
+        }),
+    migrations: [path.join(__dirname, '../migrations/*.+(js|ts)')],
   },
 
   /**
