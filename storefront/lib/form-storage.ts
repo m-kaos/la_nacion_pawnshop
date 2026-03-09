@@ -7,7 +7,6 @@ const FORM_DATA_KEY = 'auth_form_data';
 
 export interface AuthFormData {
   email: string;
-  password: string;
   firstName?: string;
   lastName?: string;
   phoneNumber?: string;

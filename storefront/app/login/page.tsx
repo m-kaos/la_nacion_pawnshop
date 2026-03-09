@@ -26,9 +26,6 @@ function LoginContent() {
     if (savedData.email) {
       setEmail(savedData.email);
     }
-    if (savedData.password && shouldRemember) {
-      setPassword(savedData.password);
-    }
     setRememberMe(shouldRemember);
   }, []);
 
@@ -41,10 +38,10 @@ function LoginContent() {
 
   // Save form data as user types
   useEffect(() => {
-    if (email || password) {
-      saveFormData({ email, password });
+    if (email) {
+      saveFormData({ email });
     }
-  }, [email, password]);
+  }, [email]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
